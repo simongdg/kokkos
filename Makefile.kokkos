@@ -19,7 +19,6 @@ KOKKOS_OPTIONS ?= ""
 KOKKOS_CUDA_OPTIONS ?= ""
 
 # Check for general settings
-
 KOKKOS_INTERNAL_ENABLE_DEBUG := $(strip $(shell echo $(KOKKOS_DEBUG) | grep "yes" | wc -l))
 KOKKOS_INTERNAL_ENABLE_PROFILING_COLLECT_KERNEL_DATA := $(strip $(shell echo $(KOKKOS_PROFILING) | grep "kernel_times" | wc -l))
 KOKKOS_INTERNAL_ENABLE_PROFILING_AGGREGATE_MPI := $(strip $(shell echo $(KOKKOS_PROFILING) | grep "aggregate_mpi" | wc -l))
@@ -38,7 +37,6 @@ KOKKOS_INTERNAL_CUDA_USE_RELOC := $(strip $(shell echo $(KOKKOS_CUDA_OPTIONS) | 
 KOKKOS_INTERNAL_CUDA_USE_LAMBDA := $(strip $(shell echo $(KOKKOS_CUDA_OPTIONS) | grep "enable_lambda" | wc -l))
 
 # Check for Kokkos Host Execution Spaces one of which must be on
-
 KOKKOS_INTERNAL_USE_OPENMP := $(strip $(shell echo $(KOKKOS_DEVICES) | grep OpenMP | wc -l))
 KOKKOS_INTERNAL_USE_PTHREADS := $(strip $(shell echo $(KOKKOS_DEVICES) | grep Pthread | wc -l))
 KOKKOS_INTERNAL_USE_SERIAL := $(strip $(shell echo $(KOKKOS_DEVICES) | grep Serial | wc -l))
@@ -142,6 +140,23 @@ KOKKOS_INTERNAL_USE_ARCH_AVX       := $(strip $(shell echo $(KOKKOS_INTERNAL_USE
 KOKKOS_INTERNAL_USE_ARCH_AVX2      := $(strip $(shell echo $(KOKKOS_INTERNAL_USE_ARCH_HSW) | bc ))
 KOKKOS_INTERNAL_USE_ARCH_AVX512MIC := $(strip $(shell echo $(KOKKOS_INTERNAL_USE_ARCH_KNL) | bc ))
 
+# Detect basic ISA we are able to use for ASM
+KOKKOS_INTERNAL_USE_X86_64_ISA    := $(strip $(shell echo $(KOKKOS_ARCH) | grep -e SNB -e HSW -e KNL | wc -l))
+KOKKOS_INTERNAL_USE_KNC_ISA       := $(strip $(shell echo $(KOKKOS_ARCH) | grep KNC | wc -l))
+KOKKOS_INTERNAL_USE_POWERLE_ISA   := $(strip $(shell echo $(KOKKOS_ARCH) | grep -e Power8 | wc -l))
+
+ifeq ($(KOKKOS_INTERNAL_USE_X86_64_ISA), 1)
+	KOKKOS_ISA_CPPFLAGS := -DKOKKOS_USE_X86_64_ISA
+endif
+
+ifeq ($(KOKKOS_INTERNAL_USE_KNC_ISA), 1)
+	KOKKOS_ISA_CPPFLAGS := -DKOKKOS_USE_KNC_ISA
+endif
+
+ifeq ($(KOKKOS_INTERNAL_USE_POWERLE_ISA), 1)
+	KOKKOS_ISA_CPPFLAGS:= -DKOKKOS_USE_POWERLE_ISA
+endif
+
 #Incompatible flags?
 KOKKOS_INTERNAL_USE_ARCH_MULTIHOST := $(strip $(shell echo "$(KOKKOS_INTERNAL_USE_ARCH_AVX)+$(KOKKOS_INTERNAL_USE_ARCH_AVX2)+$(KOKKOS_INTERNAL_USE_ARCH_KNC)+$(KOKKOS_INTERNAL_USE_ARCH_IBM)+$(KOKKOS_INTERNAL_USE_ARCH_AMDAVX)+$(KOKKOS_INTERNAL_USE_ARCH_ARMV80)>1" | bc ))
 KOKKOS_INTERNAL_USE_ARCH_MULTIGPU := $(strip $(shell echo "$(KOKKOS_INTERNAL_USE_ARCH_NVIDIA)>1" | bc))
@@ -155,7 +170,7 @@ endif
 
 #Generating the list of Flags
 
-KOKKOS_CPPFLAGS = -I./ -I$(KOKKOS_PATH)/core/src -I$(KOKKOS_PATH)/containers/src -I$(KOKKOS_PATH)/algorithms/src
+KOKKOS_CPPFLAGS = -I./ -I$(KOKKOS_PATH)/core/src -I$(KOKKOS_PATH)/containers/src -I$(KOKKOS_PATH)/algorithms/src $(KOKKOS_ISA_CPPFLAGS)
 # No warnings:
 KOKKOS_CXXFLAGS =
 # INTEL and CLANG warnings:

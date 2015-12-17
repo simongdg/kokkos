@@ -326,7 +326,7 @@ void ThreadsExec::fence()
 
   // Make sure function and arguments are cleared before
   // potentially re-activating threads with a subsequent launch.
-  memory_fence();
+  store_fence();
 }
 
 /** \brief  Begin execution of the asynchronous functor */
@@ -342,7 +342,7 @@ void ThreadsExec::start( void (*func)( ThreadsExec & , const void * ) , const vo
   s_current_function_arg = arg ;
 
   // Make sure function and arguments are written before activating threads.
-  memory_fence();
+  store_fence();
 
   // Activate threads:
   for ( int i = s_thread_pool_size[0] ; 0 < i-- ; ) {
@@ -404,7 +404,7 @@ void ThreadsExec::execute_serial( void (*func)( ThreadsExec & , const void * ) )
   s_current_function_arg = & s_threads_process ;
 
   // Make sure function and arguments are written before activating threads.
-  memory_fence();
+  store_fence();
 
   const unsigned begin = s_threads_process.m_pool_base ? 1 : 0 ;
 
@@ -426,7 +426,7 @@ void ThreadsExec::execute_serial( void (*func)( ThreadsExec & , const void * ) )
   s_current_function = 0 ;
 
   // Make sure function and arguments are cleared before proceeding.
-  memory_fence();
+  store_fence();
 }
 
 //----------------------------------------------------------------------------
@@ -664,7 +664,7 @@ void ThreadsExec::initialize( unsigned thread_count ,
 
       // Make sure all outstanding memory writes are complete
       // before spawning the new thread.
-      memory_fence();
+      store_fence();
 
       // Spawn thread executing the 'driver()' function.
       // Wait until spawned thread has attempted to initialize.
