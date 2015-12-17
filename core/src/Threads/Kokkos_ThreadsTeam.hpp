@@ -115,6 +115,9 @@ public:
       for ( n = 1 ; ( ! ( m_team_rank_rev & n ) ) && ( ( j = m_team_rank_rev + n ) < m_team_size ) ; n <<= 1 ) {
         m_team_base[j]->state() = ThreadsExec::Active ;
       }
+
+      // Ensure all the state changes we have made are propagated correctly
+      store_fence();
     }
 
 public:
@@ -274,8 +277,7 @@ public:
       volatile type * const work_value  = ((type*) m_exec->scratch_memory());
 
       *work_value = value ;
-
-      memory_fence();
+      store_fence();
 
       if ( team_fan_in() ) {
         // The last thread to synchronize returns true, all other threads wait for team_fan_out()
