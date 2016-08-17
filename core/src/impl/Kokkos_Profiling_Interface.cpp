@@ -145,6 +145,12 @@ namespace Kokkos {
                 initProfileLibrary = *((initFunction*) &p7);
                 auto p8 = dlsym(firstProfileLibrary, "kokkosp_finalize_library");
                 finalizeProfileLibrary = *((finalizeFunction*) &p8);
+
+		auto p9 = dlsym(firstProfileLibrary, "kokkosp_autoTune");
+                autoTune_ptr = *((autoTuneFunction*) &p9);
+		auto p10 = dlsym(firstProfileLibrary, "kokkosp_autoTune_v2");
+                autoTune_v2_ptr = *((autoTuneFunction_v2*) &p10);
+
             }
         }
 
@@ -178,8 +184,23 @@ namespace Kokkos {
         endReduceCallee = NULL;
         initProfileLibrary = NULL;
         finalizeProfileLibrary = NULL;
+        autoTune_ptr = NULL;
+	autoTune_v2_ptr = NULL;
       }
     }
+    
+    void autoTune(int* teams, int* vectors, int nnz, int max_iter){
+        if(NULL != autoTune_ptr) {
+            (*autoTune_ptr)(teams, vectors, nnz, max_iter);
+        }
+    }
+
+    void autoTune_v2(int* teams, int* vectors, int max_iter){
+        if(NULL != autoTune_v2_ptr) {
+            (*autoTune_v2_ptr)(teams, vectors, max_iter);
+        }
+    }
+
   }
 }
 

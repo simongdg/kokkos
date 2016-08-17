@@ -69,6 +69,8 @@ namespace Kokkos {
     typedef void (*finalizeFunction)();
     typedef void (*beginFunction)(const char*, const uint32_t, uint64_t*);
     typedef void (*endFunction)(uint64_t);
+    typedef void (*autoTuneFunction)(int*, int*, int, int);
+    typedef void (*autoTuneFunction_v2)(int*, int*, int);
 
     static initFunction initProfileLibrary = NULL;
     static finalizeFunction finalizeProfileLibrary = NULL;
@@ -78,6 +80,8 @@ namespace Kokkos {
     static endFunction endForCallee = NULL;
     static endFunction endScanCallee = NULL;
     static endFunction endReduceCallee = NULL;
+    static autoTuneFunction autoTune_ptr = NULL;
+    static autoTuneFunction_v2 autoTune_v2_ptr = NULL;
 
     bool profileLibraryLoaded();
 
@@ -90,6 +94,9 @@ namespace Kokkos {
 
     void initialize();
     void finalize();
+
+    void autoTune(int*, int*, int, int);
+    void autoTune_v2(int*, int*, int);
 
     //Define finalize_fake inline to get rid of warnings for unused static variables
     inline void finalize_fake() {
@@ -107,10 +114,10 @@ namespace Kokkos {
         endReduceCallee = NULL;
         initProfileLibrary = NULL;
         finalizeProfileLibrary = NULL;
+        autoTune_ptr = NULL;
+	autoTune_v2_ptr = NULL;
       }
     }
-
-
   }
 }
 
